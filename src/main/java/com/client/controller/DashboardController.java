@@ -9,11 +9,13 @@ import com.client.model.BulkStatus;
 import com.client.model.CreditSummary;
 import com.client.model.Dashboard;
 import com.client.model.UsageTrend;
+import com.client.utils.AbstractUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,18 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/dashboard")
-public class DashboardController {
+public class DashboardController extends AbstractUtils{
     
     @Autowired
     private SessionController sessionController;
     
     @GetMapping("/{date_from}/{date_to}")
-    public ResponseEntity fetchDashboardData() {
+    public ResponseEntity fetchDashboardData(@PathVariable("date_from") String date_from, @PathVariable("date_to") String date_to) {
         sessionController.getLoggedInUser(false);
         Dashboard data = new Dashboard();
         
         data.setBulkStatus(getBulkStatus());
-        data.setUsageTrend(getUsageTrend());
+        data.setUsageTrend(getUsageTrend(date_from, date_to));
         data.setCreditSummary(getCreditSummary());
         
         return ResponseEntity.status(200).body(data);
@@ -43,27 +45,35 @@ public class DashboardController {
     private List<BulkStatus> getBulkStatus() {
         List<BulkStatus> bulkStatuses = new ArrayList<>();
         
-        bulkStatuses.add(new BulkStatus(10, "pending", 120, null, null));
-        bulkStatuses.add(new BulkStatus(20, "delivered to phone", 52, null, null));
-        bulkStatuses.add(new BulkStatus(30, "DLR pending", 7, null, null));
+        bulkStatuses.add(new BulkStatus(10, "pending", randomizeData(), null, null));
+        bulkStatuses.add(new BulkStatus(20, "delivered to phone", randomizeData(), null, null));
+        bulkStatuses.add(new BulkStatus(30, "DLR pending", randomizeData(), null, null));
         
         return bulkStatuses;
     }
     
-    private List<UsageTrend> getUsageTrend() {
+    private List<UsageTrend> getUsageTrend(String date_from, String date_to) {
         List<UsageTrend> usageTrends = new ArrayList<>();
         
-        usageTrends.add(new UsageTrend("13th Nov", 300, 50, 1050, 1200));
-        usageTrends.add(new UsageTrend("27th Nov", 100, 70, 4020, 700));
-        usageTrends.add(new UsageTrend("22th Nov", 13, 150, 800, 1050));
-        usageTrends.add(new UsageTrend("88th Nov", 73, 45, 260, 450));
+        List<String> dates = getDates(date_from, date_to);
+        
+        dates.forEach((date) -> {
+            usageTrends.add(new UsageTrend(date, randomizeData(), randomizeData(), randomizeData(), randomizeData()));
+        });
         
         return usageTrends;
     }
     
     private CreditSummary getCreditSummary() {
-        CreditSummary creditSummary = new CreditSummary(420, 1250, "12th Dec 2022");
+        CreditSummary creditSummary = new CreditSummary(randomizeData(), randomizeData(), "12th Dec 2022");
         
         return creditSummary;
+    }
+    
+    private Integer randomizeData() {
+        int min = 100;
+        int max = 5000;
+        int number = (int) Math.floor(Math.random() * (max - min + 1) + min);
+        return number;
     }
 }

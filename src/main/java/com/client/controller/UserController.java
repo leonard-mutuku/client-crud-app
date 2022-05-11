@@ -5,6 +5,7 @@
  */
 package com.client.controller;
 
+import com.client.model.Message;
 import com.client.model.Response;
 import com.client.model.UserDto;
 import com.client.model.User;
@@ -74,9 +75,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(new Response(105, "User Already registered!"));
         } else {
             UserDto reg = userRepository.save(signUpDto);
-            Response res = (reg == null) ? new Response(110, "User registered failed!") : new Response(0, "User registered successful.");
+            Response res = (reg == null) ? new Response(110, "User registration failed!") : new Response(0, "User registration successful.");
             return ResponseEntity.status(HttpStatus.CREATED).body(res);
         }        
+    }
+    
+    @PostMapping("/contact-us")
+    public ResponseEntity contactUs(@RequestBody Message message) {
+        System.out.println(message.toString());
+        Response res = new Response(0, "Message sent successful.");
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
     
     private void saveLastLogin(UserDto userDto) {
